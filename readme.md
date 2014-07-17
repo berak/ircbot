@@ -1,3 +1,3 @@
-small collection of ircbots 
+small collection of ircclients in various laguages
 
-(i try to write one, whenever i learn a new language..)
+(my favourite noob project, whenever exploring a new language..)
