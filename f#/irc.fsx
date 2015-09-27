@@ -3,7 +3,7 @@ open System.Windows.Forms
 open System.Threading
 
 let NICK = "njamr"
-let mutable CHANNEL = "#p4p4p4"
+let mutable CHANNEL = "raw"
 
 let form = new Form()
 form.Width  <- 400
@@ -35,18 +35,22 @@ irc_write("PASS " + "i_am_" + NICK)
 irc_write("USER " + NICK + " 12 * :" + NICK)
 irc_write("NICK " + NICK);
 
-let newChan (s:string) = 
+let joinChan (s:string) = 
+  if not(s = "raw") then
+    irc_write("JOIN " + CHANNEL);
   let page = new TabPage()
   page.Text <- s
   page.Name <- s
   let text = new RichTextBox()
   text.Dock <- DockStyle.Fill  
-  text.Text <- "welcome to " + s + ".\r\n"
   page.Controls.Add(text)    
-  tabs.Controls.Add(page)    
+  tabs.Controls.Add(page)
+
+let partChan (s:string) = 
+  irc_write("PART " + s)
+  tabs.Controls.Remove(tabs.Controls.Find(s,true).[0])    
   
-irc_write("JOIN " + CHANNEL);
-newChan(CHANNEL)
+joinChan(CHANNEL)
 
 let findText(s:string) =
   tabs.Controls.Find(s,true).[0].Controls.[0]
@@ -58,12 +62,14 @@ editB.KeyDown.Add(fun e ->
   if (e.KeyValue = 13) then
     let text = findText(CHANNEL)
     if editB.Text.StartsWith("/") then
-      if text.Text = "/clear" then 
+      if text.Text.StartsWith("/cl") then 
         text.Text <- ""
-      else if editB.Text.StartsWith("/join") then 
-        CHANNEL <- editB.Text.Substring(6)
-        irc_write("JOIN " + CHANNEL);
-        newChan(CHANNEL)
+      else if editB.Text.StartsWith("/j") then 
+        CHANNEL <- editB.Text.Substring(editB.Text.IndexOf(" ")+1)
+        joinChan(CHANNEL)
+        text.Text <- ""  
+      else if editB.Text.StartsWith("/p") then 
+        partChan(CHANNEL)
         text.Text <- ""  
       else
         irc_write(editB.Text.Substring(1) + "\r\n")
@@ -96,6 +102,8 @@ let rd = new Thread(new ThreadStart(fun _ ->
         let m = p.Substring(e+1)
         text.Text <- text.Text + "<" + n + "> " + m + "\n"
         Console.WriteLine("<" + n + "> " + m)
+    let raw = findText("raw")
+    raw.Text <- raw.Text + " " + mess + "\n"
   ))
 rd.Start()
 
