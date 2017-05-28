@@ -62,7 +62,7 @@ editB.KeyDown.Add(fun e ->
   if (e.KeyValue = 13) then
     let text = findText(CHANNEL)
     if editB.Text.StartsWith("/") then
-      if text.Text.StartsWith("/cl") then 
+      if editB.Text.StartsWith("/cl") then 
         text.Text <- ""
       else if editB.Text.StartsWith("/j") then 
         CHANNEL <- editB.Text.Substring(editB.Text.IndexOf(" ")+1)
@@ -90,7 +90,7 @@ let rd = new Thread(new ThreadStart(fun _ ->
     if mess.StartsWith("PING") then
         irc_write("PONG 12345\r\n")
     let l = mess.IndexOf("PRIVMSG ")
-    Console.WriteLine(l>0)
+    //Console.WriteLine(l>0)
     if l>=0 then
       let text = findText(CHANNEL)
       let ne = mess.IndexOf("!")
