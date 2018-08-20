@@ -4,7 +4,7 @@ import time
 import socket
 
 channel = "#opencv" # "#ubuntu"
-nick = 'pz222'
+nick = 'mcclintic'
 
 lines = {}
 names = []
