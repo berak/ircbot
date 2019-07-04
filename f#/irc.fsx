@@ -8,14 +8,14 @@ let mutable CHANNEL = "raw"
 let form = new Form()
 form.Width  <- 400
 form.Height <- 300
-form.Visible <- true 
+form.Visible <- true
 form.Text <- "i r c"
 
 let tabs = new TabControl()
 tabs.Dock <- DockStyle.Fill
 tabs.Click.Add( fun e ->
-  CHANNEL <- tabs.SelectedTab.Text 
-  Console.WriteLine("changed to " + CHANNEL) 
+  CHANNEL <- tabs.SelectedTab.Text
+  Console.WriteLine("changed to " + CHANNEL)
   )
 
 let tcp = new System.Net.Sockets.TcpClient("irc.freenode.net",6667)
@@ -23,54 +23,54 @@ let strm = tcp.GetStream()
 let reader = new System.IO.StreamReader(strm)
 let writer = new System.IO.StreamWriter(strm)
 
-let irc_write (s:string) = 
+let irc_write (s:string) =
   writer.WriteLine(s)
   writer.Flush()
   Console.WriteLine("> " + s)
-  
+
 let irc_read () =
   reader.ReadLine()
-  
+
 irc_write("PASS " + "i_am_" + NICK)
 irc_write("USER " + NICK + " 12 * :" + NICK)
 irc_write("NICK " + NICK);
 
-let joinChan (s:string) = 
+let joinChan (s:string) =
   if not(s = "raw") then
     irc_write("JOIN " + CHANNEL);
   let page = new TabPage()
   page.Text <- s
   page.Name <- s
   let text = new RichTextBox()
-  text.Dock <- DockStyle.Fill  
-  page.Controls.Add(text)    
+  text.Dock <- DockStyle.Fill
+  page.Controls.Add(text)
   tabs.Controls.Add(page)
 
-let partChan (s:string) = 
+let partChan (s:string) =
   irc_write("PART " + s)
-  tabs.Controls.Remove(tabs.Controls.Find(s,true).[0])    
-  
+  tabs.Controls.Remove(tabs.Controls.Find(s,true).[0])
+
 joinChan(CHANNEL)
 
 let findText(s:string) =
   tabs.Controls.Find(s,true).[0].Controls.[0]
 
 let editB = new TextBox()
-editB.Dock <- DockStyle.Bottom  
+editB.Dock <- DockStyle.Bottom
 editB.Text <- "/clear"
-editB.KeyDown.Add(fun e -> 
+editB.KeyDown.Add(fun e ->
   if (e.KeyValue = 13) then
     let text = findText(CHANNEL)
     if editB.Text.StartsWith("/") then
-      if editB.Text.StartsWith("/cl") then 
+      if editB.Text.StartsWith("/cl") then
         text.Text <- ""
-      else if editB.Text.StartsWith("/j") then 
+      else if editB.Text.StartsWith("/j") then
         CHANNEL <- editB.Text.Substring(editB.Text.IndexOf(" ")+1)
         joinChan(CHANNEL)
-        text.Text <- ""  
-      else if editB.Text.StartsWith("/p") then 
+        text.Text <- ""
+      else if editB.Text.StartsWith("/p") then
         partChan(CHANNEL)
-        text.Text <- ""  
+        text.Text <- ""
       else
         irc_write(editB.Text.Substring(1) + "\r\n")
         text.Text <- text.Text + editB.Text + "\r\n"
@@ -79,7 +79,7 @@ editB.KeyDown.Add(fun e ->
       text.Text <- text.Text + "<" + NICK + ">\t" + editB.Text+ "\r\n"
     editB.Text <- ""
   )
-form.Controls.Add(editB)    
+form.Controls.Add(editB)
 form.Controls.Add(tabs)
 
 
@@ -108,8 +108,9 @@ let rd = new Thread(new ThreadStart(fun _ ->
 rd.Start()
 
 //#if COMPILED
-// Run the main code. The attribute marks the startup application thread as "Single 
-// Thread Apartment" mode, which is necessary for GUI applications. 
-[<STAThread>]    
+// Run the main code. The attribute marks the startup application thread as "Single
+// Thread Apartment" mode, which is necessary for GUI applications.
+[<STAThread>]
 do Application.Run(form)
 //#endif
+
