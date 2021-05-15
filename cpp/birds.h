@@ -3,7 +3,7 @@
 
 
 
-namespace Birds 
+namespace Birds
 {
     int Server(int port);
     int Accept(int serv);
@@ -18,10 +18,10 @@ namespace Birds
     char * Read(int sock);
 
     char * Error();
-    
+
     int Close(int sock);
 }
 
 
 
-#endif __birds_onboard__
+#endif // __birds_onboard__

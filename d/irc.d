@@ -28,6 +28,7 @@ class IrcClient : Thread
                 line ~= "\r\n";
                 sock.send(line);
                 line = lorig;
+                continue;
             }
             line ~= k;
         }

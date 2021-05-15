@@ -3,28 +3,29 @@
 
 #include <stdio.h>
 
+
 class IrcListener : public Thread
 {
 	int sock;
-	
+
 public:
-	
-	IrcListener() 
-		: sock(-1) 
+
+	IrcListener()
+		: sock(-1)
 	{}
 
-	~IrcListener() 
+	~IrcListener()
 	{
 		Birds::Close(sock);
 	}
-	
+
 	virtual void run()
 	{
-		while(true) 
+		while(true)
 		{
 			char *m = Birds::Read(sock);
 			if ( ! m ) break;
-			
+
 			if ( !strncmp(m, "PING",4) )
 			{
 				Birds::Write(sock, "PONG 12345 : hiho;) \r\n", 0);
@@ -32,7 +33,7 @@ public:
 			printf("%s", m );
 		}
 	}
-	
+
 	bool start(char * host, int port)
 	{
 		sock = Birds::Client(host, port);
@@ -69,7 +70,7 @@ int main( int argc, char **argv )
 
 	IrcListener irc;
 	irc.start("irc.freenode.net",6667);
-    
+
     while(true) // input loop
     {
 		char buf[500];

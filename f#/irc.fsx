@@ -2,7 +2,7 @@ open System
 open System.Windows.Forms
 open System.Threading
 
-let NICK = "njamr"
+let mutable NICK = "mcclintic"
 let mutable CHANNEL = "raw"
 
 let form = new Form()
@@ -23,13 +23,13 @@ let strm = tcp.GetStream()
 let reader = new System.IO.StreamReader(strm)
 let writer = new System.IO.StreamWriter(strm)
 
+let _timestamp () =
+  DateTime.Now.ToString("HH:mm:ss")
+
 let irc_write (s:string) =
   writer.WriteLine(s)
   writer.Flush()
-  Console.WriteLine("> " + s)
-
-let irc_read () =
-  reader.ReadLine()
+  Console.Write("> " + _timestamp() + " " + s)
 
 irc_write("PASS " + "i_am_" + NICK)
 irc_write("USER " + NICK + " 12 * :" + NICK)
@@ -68,9 +68,17 @@ editB.KeyDown.Add(fun e ->
         CHANNEL <- editB.Text.Substring(editB.Text.IndexOf(" ")+1)
         joinChan(CHANNEL)
         text.Text <- ""
+      else if editB.Text.StartsWith("/n") then
+        NICK <- editB.Text.Substring(editB.Text.IndexOf(" ")+1)
+        irc_write("nick " + NICK + "\r\n")
       else if editB.Text.StartsWith("/p") then
         partChan(CHANNEL)
         text.Text <- ""
+      else if editB.Text.StartsWith("/t") then
+        let N = editB.Text.Substring(editB.Text.IndexOf(" ")+1)
+        let msg = "privmsg cvtail :.tail " + N
+        irc_write(msg + "\r\n")
+        //text.Text <- ""
       else
         irc_write(editB.Text.Substring(1) + "\r\n")
         text.Text <- text.Text + editB.Text + "\r\n"
@@ -86,13 +94,13 @@ form.Controls.Add(tabs)
 let rd = new Thread(new ThreadStart(fun _ ->
   while(true) do
     let mess = reader.ReadLine()
-    Console.WriteLine(mess)
+    let _t = _timestamp()
+    Console.WriteLine(_t + " " + mess)
     if mess.StartsWith("PING") then
-        irc_write("PONG 12345\r\n")
+        irc_write("PONG helo@"+_t+"\r\n")
     let l = mess.IndexOf("PRIVMSG ")
     //Console.WriteLine(l>0)
     if l>=0 then
-      let text = findText(CHANNEL)
       let ne = mess.IndexOf("!")
       if ne > 0 then
         let n = mess.Substring(1,ne-1)
@@ -100,10 +108,12 @@ let rd = new Thread(new ThreadStart(fun _ ->
         let c = p.Substring(9)
         let e = p.IndexOf(":")
         let m = p.Substring(e+1)
-        text.Text <- text.Text + "<" + n + "> " + m + "\n"
-        Console.WriteLine("<" + n + "> " + m)
+        let chan = c.Substring(0,e-1)
+        let text = findText(CHANNEL)
+        text.Text <- text.Text + _t + " <" + n + "> " + m + "\n"
+        //Console.WriteLine(_t + chan + "<" + n + "> " + m)
     let raw = findText("raw")
-    raw.Text <- raw.Text + " " + mess + "\n"
+    raw.Text <- raw.Text + _t + " " + mess + "\n"
   ))
 rd.Start()
 

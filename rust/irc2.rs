@@ -1,3 +1,6 @@
+//extern crate chrono;
+//#use chrono::{DateTime, Utc};
+
 use std::net::{TcpStream};
 use std::io::{Read, Write};
 use std::str::from_utf8;
@@ -16,14 +19,18 @@ fn reader (stream: &mut TcpStream) {
 	    let mut data = [0; 2048];
 	    match stream.read(&mut data) {
 	        Ok(z) => {
+			    // let now: DateTime<Utc> = Utc::now();
 	            let text = from_utf8(&data[0..z]).unwrap();
-	            println!("{}", text);
 	            if text.starts_with("PING") {
 	            	stream.write(b"PONG : 123456\r\n").unwrap();
-	          	}
+	          	} else if text != "\r\n" {
+	            	//println!("{}{}", now.format("%T"), text);
+	            	println!("{}", text);
+	        	}
 	        },
 	        Err(e) => {
 	            println!("Failed to receive data: {}", e);
+		        break;
 	        }
 	    }
 	}
@@ -34,8 +41,9 @@ fn main() {
         Ok(mut stream) => {
             println!("Successfully connected to server in port 6667");
 
-            stream.write(b"NICK abcd17\r\n").unwrap();
-            stream.write(b"USER abcd17 abcd17 + 12 * :abcd17\r\n\r\n").unwrap();
+            stream.write(b"NICK mcclintic\r\n").unwrap();
+            stream.write(b"USER mcclintic + 12 * :mcclintic\r\n").unwrap();
+            stream.write(b"NickServ identify i_am_mcclintic\r\n\r\n").unwrap();
 
 			let mut s2 = stream.try_clone().unwrap();
  			std::thread::spawn(move||{
